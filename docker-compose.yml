@@ -1,0 +1,43 @@
+name: nginx-test-stack
+services:
+  web:
+    image: nginx:stable-bookworm
+    container_name: nginx
+    hostname: nginx
+    volumes:
+      - ./nginx/www-data:/var/www
+      - ./nginx/nginx-conf/conf.d:/etc/nginx/conf.d
+      - ./nginx/nginx-conf/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/logs:/var/log/nginx
+      - ./nginx/GeoIP.dat:/usr/share/GeoIP/GeoIP.dat:ro
+    ports:
+      - 80
+  #    expose:
+  #      - 80
+
+  php:
+    image: php:8-fpm-alpine
+    container_name: php
+    hostname: php
+    volumes:
+      - ./nginx/www-data:/var/www
+      - ./nginx/logs:/var/log/
+    working_dir: /var/www
+    ports:
+      - 9000
+  #    expose:
+  #      - 9000
+
+  client_1:
+    image: nginx:stable-bookworm
+    container_name: c1
+    volumes:
+      - ./script:/script:ro
+    entrypoint: ["/script/slow.sh"]
+
+  client_2:
+    image: nginx:stable-bookworm
+    container_name: c2
+    volumes:
+      - ./script:/script:ro
+    entrypoint: ["/script/fast.sh"]
